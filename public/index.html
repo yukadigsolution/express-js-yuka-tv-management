@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yuka TV Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</head>
+<body class="bg-gray-900 text-gray-100 flex h-screen overflow-hidden">
+
+<aside class="w-64 bg-gray-800 border-r border-gray-700 flex flex-col z-10">
+    <div class="p-6">
+        <h1 class="text-2xl font-bold text-green-400"><i class="fa-solid fa-tv mr-2"></i>Yuka TV</h1>
+    </div>
+    <nav class="flex-1 px-4 space-y-2">
+        <button onclick="switchTab('dashboard')" class="w-full flex items-center p-3 rounded-lg hover:bg-gray-700 text-left transition-colors text-green-400 font-semibold bg-gray-700/50">
+            <i class="fa-solid fa-chart-pie w-6"></i> Dashboard
+        </button>
+        <button onclick="switchTab('devices')" class="w-full flex items-center p-3 rounded-lg hover:bg-gray-700 text-left transition-colors">
+            <i class="fa-solid fa-mobile-screen w-6"></i> Devices
+        </button>
+        <button onclick="switchTab('channels')" class="w-full flex items-center p-3 rounded-lg hover:bg-gray-700 text-left transition-colors">
+            <i class="fa-solid fa-list w-6"></i> Channels
+        </button>
+
+        <hr class="border-gray-700 my-4">
+        <button onclick="switchTab('api')" class="w-full flex items-center p-3 rounded-lg hover:bg-gray-700 text-left transition-colors text-blue-400">
+            <i class="fa-solid fa-code w-6"></i> API Developer
+        </button>
+    </nav>
+</aside>
+
+<main class="flex-1 p-8 overflow-y-auto">
+
+    <section id="tab-dashboard" class="tab-content hidden">
+        <h2 class="text-3xl font-bold mb-6">Dashboard Overview</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg flex items-center justify-between">
+                <div>
+                    <p class="text-gray-400 mb-1">Total Channels / Movies</p>
+                    <h3 id="stat-channels" class="text-4xl font-bold text-white">0</h3>
+                </div>
+                <div class="h-12 w-12 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 text-2xl">
+                    <i class="fa-solid fa-play"></i>
+                </div>
+            </div>
+            <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg flex items-center justify-between">
+                <div>
+                    <p class="text-gray-400 mb-1">Total Devices</p>
+                    <h3 id="stat-devices" class="text-4xl font-bold text-white">0</h3>
+                </div>
+                <div class="h-12 w-12 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 text-2xl">
+                    <i class="fa-solid fa-microchip"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="tab-devices" class="tab-content hidden">
+        <h2 class="text-3xl font-bold mb-6">Device Management</h2>
+        <div class="bg-gray-800 rounded-xl border border-gray-700 overflow-hidden">
+            <table class="w-full text-left">
+                <thead class="bg-gray-700/50">
+                <tr>
+                    <th class="p-4">Device Name</th>
+                    <th class="p-4">Status</th>
+                    <th class="p-4 text-right">Actions</th>
+                </tr>
+                </thead>
+                <tbody id="device-list" class="divide-y divide-gray-700"></tbody>
+            </table>
+        </div>
+    </section>
+
+    <section id="tab-channels" class="tab-content">
+        <h2 class="text-3xl font-bold mb-6">Channel & Movie Management</h2>
+
+        <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 mb-8 flex flex-col lg:flex-row gap-4 items-center justify-between">
+
+            <div class="flex gap-2 w-full lg:w-auto">
+                <input id="m3u-input" type="text" placeholder="https://example.com/playlist.m3u" class="flex-1 lg:w-64 bg-gray-900 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-green-500">
+
+                <button onclick="importChannels(event)" class="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded-lg font-medium transition-colors shrink-0" title="Import Data">
+                    <i class="fa-solid fa-cloud-arrow-down"></i> <span class="hidden sm:inline ml-1">Import</span>
+                </button>
+
+                <button onclick="resetPlaylist()" class="bg-red-600 hover:bg-red-500 text-white px-4 py-2 rounded-lg font-medium transition-colors shrink-0" title="Hapus Semua Data">
+                    <i class="fa-solid fa-trash-can"></i> <span class="hidden sm:inline ml-1">Reset</span>
+                </button>
+            </div>
+
+            <div class="w-full lg:w-auto flex items-center gap-3">
+                <label for="category-select" class="text-gray-400 font-medium whitespace-nowrap">
+                    <i class="fa-solid fa-filter mr-2"></i>Kategori:
+                </label>
+                <select id="category-select" onchange="handleCategoryChange()" class="bg-gray-900 border border-gray-600 text-white rounded-lg px-4 py-2 focus:outline-none focus:border-green-500 w-full lg:w-64 cursor-pointer">
+                    <option value="">Pilih Kategori...</option>
+                </select>
+            </div>
+
+        </div>
+
+        <div id="category-groups-container" class="space-y-10">
+            <div class="text-center py-10 text-gray-500">
+                <i class="fa-solid fa-spinner fa-spin text-3xl mb-3 block"></i> Loading data channels...
+            </div>
+        </div>
+    </section>
+    <section id="tab-api" class="tab-content hidden">
+        <h2 class="text-3xl font-bold mb-6 flex items-center"><i class="fa-solid fa-book-open text-blue-400 mr-3"></i> API Documentation v1</h2>
+        <p class="text-gray-400 mb-8">Gunakan endpoint di bawah ini untuk menghubungkan aplikasi Client (Player) ke server Yuka TV.</p>
+
+        <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 mb-8">
+            <h3 class="text-lg font-bold text-gray-200 mb-2">Authentication</h3>
+            <p class="text-sm text-gray-400 mb-4">Semua request ke API v1 wajib menyertakan header berikut:</p>
+            <div class="bg-gray-900 p-3 rounded border border-gray-600 font-mono text-sm text-green-400">
+                x-api-key: centauri
+            </div>
+        </div>
+
+        <div class="bg-gray-800 rounded-xl border border-gray-700 mb-6 overflow-hidden">
+            <div class="bg-gray-700/50 p-4 border-b border-gray-700 flex items-center gap-3">
+                <span class="bg-green-600 text-white font-bold px-3 py-1 rounded text-sm">POST</span>
+                <span class="font-mono text-lg text-gray-200">/api/v1/join</span>
+            </div>
+            <div class="p-6">
+                <p class="text-gray-400 text-sm mb-4">Mendaftarkan perangkat baru ke dalam server agar tercatat di menu Device Management.</p>
+
+                <h4 class="font-bold text-gray-300 text-sm mb-2">Request Body (JSON) / Query Params:</h4>
+                <table class="w-full text-left text-sm mb-6 bg-gray-900 rounded overflow-hidden">
+                    <thead class="bg-gray-800 text-gray-400">
+                    <tr><th class="p-2">Parameter</th><th class="p-2">Type</th><th class="p-2">Description</th></tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-700 text-gray-300">
+                    <tr><td class="p-2 font-mono text-green-400">device_name</td><td class="p-2">String (Required)</td><td class="p-2">Nama perangkat (contoh: "STB Android Ruang Tamu")</td></tr>
+                    </tbody>
+                </table>
+
+                <h4 class="font-bold text-gray-300 text-sm mb-2">Success Response:</h4>
+                <pre class="bg-gray-900 p-4 rounded border border-gray-600 font-mono text-sm text-blue-300 overflow-x-auto">
+{
+  "message": "Device berhasil bergabung",
+  "device": {
+    "id": "dev-m0z...",
+    "name": "STB Android Ruang Tamu",
+    "ip": "192.168.1.x",
+    "lastSeen": "12/06/2026, 19:52:57",
+    "status": "Online"
+  }
+}</pre>
+            </div>
+        </div>
+
+        <div class="bg-gray-800 rounded-xl border border-gray-700 mb-6 overflow-hidden">
+            <div class="bg-gray-700/50 p-4 border-b border-gray-700 flex items-center gap-3">
+                <span class="bg-blue-600 text-white font-bold px-3 py-1 rounded text-sm">GET</span>
+                <span class="font-mono text-lg text-gray-200">/api/v1/playlist</span>
+            </div>
+            <div class="p-6">
+                <p class="text-gray-400 text-sm mb-4">Mengambil seluruh data channel dan film (VOD) yang ada di server dalam format JSON.</p>
+
+                <h4 class="font-bold text-gray-300 text-sm mb-2">Success Response:</h4>
+                <pre class="bg-gray-900 p-4 rounded border border-gray-600 font-mono text-sm text-blue-300 overflow-x-auto">
+{
+  "message": "Success",
+  "total": 600,
+  "data": [
+    {
+      "id": "ch-17180000...",
+      "name": "SCTV FHD",
+      "category": "NASIONAL FHD",
+      "logo": "https://...",
+      "url": "http://..."
+    }
+  ]
+}</pre>
+            </div>
+        </div>
+    </section>
+</main>
+
+<div id="device-modal" class="fixed inset-0 bg-black/70 hidden items-center justify-center z-50">
+    <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 w-96 relative">
+        <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+        <h3 class="text-xl font-bold mb-4 border-b border-gray-700 pb-2">Device Details</h3>
+        <div id="modal-content" class="space-y-3 text-sm"></div>
+    </div>
+</div>
+
+<div id="player-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-50 p-4">
+    <div class="bg-gray-900 rounded-xl border border-gray-700 max-w-4xl w-full overflow-hidden relative shadow-2xl">
+        <div class="p-4 bg-gray-800 border-b border-gray-700 flex justify-between items-center">
+            <h3 id="player-title" class="font-bold text-lg text-green-400 truncate pr-4">Streaming</h3>
+            <button onclick="closePlayer()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+        <div class="aspect-video bg-black flex items-center justify-center">
+            <video id="video-player" controls class="w-full h-full"></video>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentDevices = [];
+    let allChannels = [];
+
+    function switchTab(tabId) {
+        // Sembunyikan semua tab
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+
+        // Reset style semua tombol sidebar
+        document.querySelectorAll('aside nav button').forEach(btn => {
+            btn.classList.remove('bg-gray-700/50');
+            // Khusus warna text, kita reset ke warna default masing-masing
+            if(!btn.classList.contains('text-blue-400')) {
+                btn.classList.remove('text-green-400', 'font-semibold');
+            }
+        });
+
+        // Tampilkan tab yang dipilih
+        document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+        // Berikan style active pada tombol yang diklik
+        const activeBtn = event.currentTarget;
+        activeBtn.classList.add('bg-gray-700/50');
+        if(tabId !== 'api') activeBtn.classList.add('text-green-400', 'font-semibold');
+
+        // Load data jika diperlukan
+        if(tabId === 'dashboard') loadDashboard();
+        if(tabId === 'devices') loadDevices();
+        if(tabId === 'channels') loadChannels();
+        // Tab 'api' statis, tidak perlu fetch data saat diklik
+    }
+
+    async function loadDashboard() {
+        const res = await fetch('/api/stats');
+        const data = await res.json();
+        document.getElementById('stat-channels').textContent = data.totalChannels;
+        document.getElementById('stat-devices').textContent = data.totalDevices;
+    }
+
+    async function loadDevices() {
+        const res = await fetch('/api/devices');
+        currentDevices = await res.json();
+        const tbody = document.getElementById('device-list');
+        tbody.innerHTML = currentDevices.map(d => `
+                <tr class="hover:bg-gray-700/30 transition-colors">
+                    <td class="p-4 font-medium">${d.name}</td>
+                    <td class="p-4">
+                        <span class="px-2 py-1 text-xs rounded-full ${d.status === 'Online' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}">
+                            ${d.status}
+                        </span>
+                    </td>
+                    <td class="p-4 text-right">
+                        <button onclick="showDeviceDetail('${d.id}')" class="text-blue-400 hover:text-blue-300 mr-4"><i class="fa-solid fa-circle-info"></i> Details</button>
+                        <button onclick="deleteDevice('${d.id}')" class="text-red-400 hover:text-red-300"><i class="fa-solid fa-trash"></i> Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+    }
+
+    async function deleteDevice(id) {
+        if(confirm('Yakin ingin menghapus device ini?')) {
+            await fetch(`/api/devices/${id}`, { method: 'DELETE' });
+            loadDevices();
+        }
+    }
+
+    function showDeviceDetail(id) {
+        const device = currentDevices.find(d => d.id === id);
+        if(!device) return;
+        document.getElementById('modal-content').innerHTML = `
+                <p><span class="text-gray-400 w-24 inline-block">ID:</span> ${device.id}</p>
+                <p><span class="text-gray-400 w-24 inline-block">Name:</span> ${device.name}</p>
+                <p><span class="text-gray-400 w-24 inline-block">IP Addr:</span> ${device.ip}</p>
+                <p><span class="text-gray-400 w-24 inline-block">Last Seen:</span> ${device.lastSeen}</p>
+                <p><span class="text-gray-400 w-24 inline-block">Status:</span> ${device.status}</p>
+            `;
+        document.getElementById('device-modal').classList.replace('hidden', 'flex');
+    }
+
+    function closeModal() {
+        document.getElementById('device-modal').classList.replace('flex', 'hidden');
+    }
+
+    // Helper untuk ekstrak 1 atau 2 huruf inisial dari Judul Film/Channel
+    function getInitials(name) {
+        if (!name) return 'TV';
+        const cleanName = name.replace(/[^\w\s]/gi, '').trim(); // bersihkan simbol seperti (2025)
+        const words = cleanName.split(' ').filter(w => w.length > 0);
+        if (words.length >= 2) {
+            return (words[0][0] + words[1][0]).toUpperCase();
+        }
+        return cleanName.substring(0, 2).toUpperCase();
+    }
+
+    // Fetch Data Channel & Grouping Berdasarkan Kategori
+    async function loadChannels() {
+        const container = document.getElementById('category-groups-container');
+        const select = document.getElementById('category-select');
+
+        try {
+            const res = await fetch('/api/channels');
+            allChannels = await res.json();
+
+            if(allChannels.length === 0) {
+                container.innerHTML = `<div class="text-center py-10 text-gray-500">Belum ada data channel. Silakan import M3U diatas.</div>`;
+                select.innerHTML = '<option value="">Pilih Kategori...</option>';
+                return;
+            }
+
+            // Ekstrak kategori unik dan urutkan abjad
+            const categories = [...new Set(allChannels.map(ch => ch.category || 'Uncategorized'))].sort();
+
+            // Isi Dropdown
+            select.innerHTML = categories.map(cat => `<option value="${cat}">${cat}</option>`).join('');
+
+            // Otomatis render kategori pertama yang ada di list
+            if(categories.length > 0) {
+                renderCategoryGrid(categories[0]);
+            }
+
+        } catch (err) {
+            container.innerHTML = `<div class="text-center py-10 text-red-400">Gagal mengambil data dari server.</div>`;
+        }
+    }
+
+    // Trigger saat dropdown diganti
+    function handleCategoryChange() {
+        const selectedCat = document.getElementById('category-select').value;
+        if(selectedCat) {
+            renderCategoryGrid(selectedCat);
+        }
+    }
+
+    // Render hanya item dari kategori yang dipilih
+    function renderCategoryGrid(categoryName) {
+        const container = document.getElementById('category-groups-container');
+
+        // Filter data dari variable memory
+        const filteredChannels = allChannels.filter(ch => (ch.category || 'Uncategorized') === categoryName);
+
+        container.innerHTML = `
+                <div class="category-block animate-fade-in">
+                    <h3 class="text-xl font-bold mb-4 text-gray-300 border-b border-gray-700 pb-2 flex items-center justify-between">
+                        <span><i class="fa-solid fa-folder-open text-amber-400 mr-2"></i>${categoryName}</span>
+                        <span class="text-sm bg-gray-800 px-3 py-1 rounded-full text-green-400 font-semibold border border-gray-700">${filteredChannels.length} Items</span>
+                    </h3>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                        ${filteredChannels.map(c => {
+            const initials = getInitials(c.name);
+            // Amankan string dari tanda petik tunggal agar tidak merusak atribut onclick HTML
+            const safeName = c.name.replace(/'/g, "\\'");
+            const encodedUrl = btoa(unescape(encodeURIComponent(c.url)));
+
+            // Menggunakan backtick normal tanpa escape (\)
+            return `
+                                <div onclick="playStream('${encodedUrl}', '${safeName}')" 
+                                     class="bg-gray-800 rounded-lg p-3 border border-gray-700 hover:border-green-500 cursor-pointer transition-all hover:-translate-y-1 flex flex-col items-center text-center group shadow-md">
+                                    
+                                    <div class="w-full aspect-[3/4] rounded-md mb-3 bg-gray-700 overflow-hidden flex items-center justify-center relative shadow-inner">
+                                        ${c.logo ?
+                `<img src="${c.logo}" alt="${c.name}" class="w-full h-full object-cover group-hover:scale-105 transition-transform" onerror="this.outerHTML='<div class=\\'text-2xl font-bold text-gray-400\\'>${initials}</div>'">` :
+                `<div class="text-2xl font-bold text-gray-400 tracking-wider">${initials}</div>`
+            }
+                                        <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                            <div class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center text-black shadow-lg">
+                                                <i class="fa-solid fa-play ml-0.5"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <p class="text-xs font-semibold text-gray-200 line-clamp-2 w-full group-hover:text-green-400 transition-colors" title="${c.name}">
+                                        ${c.name}
+                                    </p>
+                                </div>
+                            `;
+        }).join('')}
+                    </div>
+                </div>
+            `;
+    }
+
+    let hlsInstance = null;
+    let flvPlayer = null; // Tambahan untuk mpegts
+
+    function playStream(encodedUrl, name) {
+        const url = decodeURIComponent(escape(atob(encodedUrl)));
+        const video = document.getElementById('video-player');
+        const modal = document.getElementById('player-modal');
+
+        document.getElementById('player-title').textContent = name;
+        modal.classList.replace('hidden', 'flex');
+
+        // 1. Bersihkan Player Sebelumnya
+        video.pause();
+        if (hlsInstance) {
+            hlsInstance.destroy();
+            hlsInstance = null;
+        }
+        if (flvPlayer) {
+            flvPlayer.destroy();
+            flvPlayer = null;
+        }
+        video.src = "";
+
+        // 2. Tentukan Tipe Player Berdasarkan URL
+        const isM3u8 = url.includes('.m3u8');
+        // Jika tidak ada ekstensi file (seperti link auth Anda) atau .ts, asumsikan itu raw stream
+        const isRawStream = url.includes('.ts') || !url.split('/').pop().includes('.');
+
+        if (isM3u8 && Hls.isSupported()) {
+            // --- GUNAKAN HLS.JS ---
+            console.log("Memutar via HLS.js:", url);
+            hlsInstance = new Hls();
+            hlsInstance.loadSource(url);
+            hlsInstance.attachMedia(video);
+            hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => video.play().catch(e => console.log(e)));
+
+            hlsInstance.on(Hls.Events.ERROR, function(e, data) {
+                if(data.fatal) console.error("HLS Error:", data);
+            });
+
+        } else if (isRawStream && mpegts.getFeatureList().mseLivePlayback) {
+            // --- GUNAKAN MPEGTS.JS UNTUK LIVE IPTV MENTAH ---
+            console.log("Memutar via MPEGTS.js:", url);
+            flvPlayer = mpegts.createPlayer({
+                type: 'mpegts',  // Tipe stream IPTV standar
+                isLive: true,
+                url: url
+            });
+            flvPlayer.attachMediaElement(video);
+            flvPlayer.load();
+            flvPlayer.play().catch(e => {
+                console.error("Gagal play MPEGTS. Kemungkinan diblokir server (CORS/User-Agent).", e);
+                alert("Stream diblokir oleh penyedia (CORS/User-Agent). Cek console.");
+            });
+
+        } else {
+            // --- GUNAKAN NATIVE PLAYER (Untuk VOD / MP4) ---
+            console.log("Memutar via Native Player:", url);
+            video.src = url;
+            video.play().catch(e => {
+                console.error("Native play error", e);
+            });
+        }
+    }
+
+    function closePlayer() {
+        const video = document.getElementById('video-player');
+        video.pause();
+        video.src = "";
+        if (hlsInstance) {
+            hlsInstance.destroy();
+            hlsInstance = null;
+        }
+        if (flvPlayer) {
+            flvPlayer.destroy();
+            flvPlayer = null;
+        }
+        document.getElementById('player-modal').classList.replace('flex', 'hidden');
+    }
+
+    function closePlayer() {
+        const video = document.getElementById('video-player');
+        video.pause();
+        video.src = "";
+        if (hlsInstance) {
+            hlsInstance.destroy();
+            hlsInstance = null;
+        }
+        document.getElementById('player-modal').classList.replace('flex', 'hidden');
+    }
+
+    async function importChannels(event) {
+        const m3uUrl = document.getElementById('m3u-input').value;
+        if(!m3uUrl) return alert('Masukkan link M3U terlebih dahulu!');
+
+        const btn = event.currentTarget;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Processing...';
+        btn.disabled = true;
+
+        try {
+            const res = await fetch('/api/channels/import', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ m3uUrl })
+            });
+            const data = await res.json();
+            alert(data.message || 'Import selesai!');
+            document.getElementById('m3u-input').value = '';
+            loadChannels();
+        } catch(e) {
+            alert('Gagal mengimpor M3U.');
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    }
+
+    // Fungsi untuk menghapus semua data channel
+    async function resetPlaylist() {
+        // Tampilkan pop-up peringatan terlebih dahulu
+        const isConfirmed = confirm('PERINGATAN: Apakah Anda yakin ingin menghapus SEMUA data channel dan film? Aksi ini tidak dapat dibatalkan.');
+
+        if (isConfirmed) {
+            try {
+                const res = await fetch('/api/channels/reset', {
+                    method: 'DELETE'
+                });
+                const data = await res.json();
+
+                alert(data.message);
+
+                // Bersihkan kolom pencarian dan input
+                document.getElementById('search-input').value = '';
+                document.getElementById('m3u-input').value = '';
+
+                // Muat ulang daftar channel (yang sekarang kosong) dan dashboard stat
+                loadChannels();
+                loadDashboard();
+
+            } catch(e) {
+                alert('Terjadi kesalahan saat mereset playlist.');
+                console.error(e);
+            }
+        }
+    }
+
+    // Init load pertama kali halaman dibuka
+    loadChannels();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+<script src="https://cdn.jsdelivr.net/npm/mpegts.js@1.7.3/dist/mpegts.min.js"></script>
+</body>
+</html>
