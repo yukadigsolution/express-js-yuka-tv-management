@@ -141,27 +141,22 @@
   -d '{"device_name": "STB Android Ruang Tamu"}'</pre>
                 </div>
 
-                <h4 class="font-bold text-gray-300 text-sm mb-2">Contoh Request (PHP):</h4>
-                <div class="mb-6 rounded overflow-hidden border border-gray-700">
+                <h4 class="font-bold text-gray-300 text-sm mb-2">Contoh Response (JSON):</h4>
+                <div class="mb-2 rounded overflow-hidden border border-gray-700">
                     <div class="bg-gray-900 px-4 py-2 flex justify-between items-center border-b border-gray-700">
-                        <span class="text-xs font-mono text-gray-400">PHP (cURL)</span>
-                        <button onclick="copyCode(this, 'code-join-php')" class="text-xs bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1 rounded transition-colors"><i class="fa-regular fa-copy mr-1"></i> Copy</button>
+                        <span class="text-xs font-mono text-gray-400">JSON</span>
+                        <button onclick="copyCode(this, 'res-join-json')" class="text-xs bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1 rounded transition-colors"><i class="fa-regular fa-copy mr-1"></i> Copy</button>
                     </div>
-                    <pre id="code-join-php" class="bg-black p-4 text-sm font-mono text-blue-300 overflow-x-auto whitespace-pre">&lt;?php
-$ch = curl_init('http://localhost:3000/api/v1/join');
-$payload = json_encode(['device_name' => 'STB Android Ruang Tamu']);
-
-curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-curl_setopt($ch, CURLOPT_HTTPHEADER, [
-    'x-api-key: centauri',
-    'Content-Type: application/json'
-]);
-
-$response = curl_exec($ch);
-curl_close($ch);
-
-echo $response;</pre>
+                    <pre id="res-join-json" class="bg-black p-4 text-sm font-mono text-blue-300 overflow-x-auto whitespace-pre">{
+  "message": "Device berhasil bergabung",
+  "device": {
+    "id": "dev-m0z...",
+    "name": "STB Android Ruang Tamu",
+    "ip": "192.168.1.x",
+    "lastSeen": "12/06/2026, 19:52:57",
+    "status": "Online"
+  }
+}</pre>
                 </div>
             </div>
         </div>
@@ -184,24 +179,25 @@ echo $response;</pre>
   -H "x-api-key: centauri"</pre>
                 </div>
 
-                <h4 class="font-bold text-gray-300 text-sm mb-2">Contoh Request (PHP):</h4>
-                <div class="mb-6 rounded overflow-hidden border border-gray-700">
+                <h4 class="font-bold text-gray-300 text-sm mb-2">Contoh Response (JSON):</h4>
+                <div class="mb-2 rounded overflow-hidden border border-gray-700">
                     <div class="bg-gray-900 px-4 py-2 flex justify-between items-center border-b border-gray-700">
-                        <span class="text-xs font-mono text-gray-400">PHP (file_get_contents)</span>
-                        <button onclick="copyCode(this, 'code-play-php')" class="text-xs bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1 rounded transition-colors"><i class="fa-regular fa-copy mr-1"></i> Copy</button>
+                        <span class="text-xs font-mono text-gray-400">JSON</span>
+                        <button onclick="copyCode(this, 'res-play-json')" class="text-xs bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1 rounded transition-colors"><i class="fa-regular fa-copy mr-1"></i> Copy</button>
                     </div>
-                    <pre id="code-play-php" class="bg-black p-4 text-sm font-mono text-blue-300 overflow-x-auto whitespace-pre">&lt;?php
-$options = [
-    'http' => [
-        'method' => 'GET',
-        'header' => 'x-api-key: centauri'
-    ]
-];
-
-$context = stream_context_create($options);
-$response = file_get_contents('http://localhost:3000/api/v1/playlist', false, $context);
-
-echo $response;</pre>
+                    <pre id="res-play-json" class="bg-black p-4 text-sm font-mono text-blue-300 overflow-x-auto whitespace-pre">{
+  "message": "Success",
+  "total": 600,
+  "data": [
+    {
+      "id": "ch-17180000...",
+      "name": "SCTV FHD",
+      "category": "NASIONAL FHD",
+      "logo": "https://...",
+      "url": "http://..."
+    }
+  ]
+}</pre>
                 </div>
             </div>
         </div>
