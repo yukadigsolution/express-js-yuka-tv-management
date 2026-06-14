@@ -115,9 +115,10 @@
         <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 mb-8">
             <h3 class="text-lg font-bold text-gray-200 mb-2">Authentication</h3>
             <p class="text-sm text-gray-400 mb-4">Semua request ke API v1 wajib menyertakan header berikut:</p>
-            <div class="bg-gray-900 p-3 rounded border border-gray-600 font-mono text-sm text-green-400">
+            <div class="bg-gray-900 p-3 rounded border border-gray-600 font-mono text-sm text-green-400 inline-block">
                 x-api-key: centauri
             </div>
+            <p class="text-xs text-gray-500 mt-3"><i class="fa-solid fa-circle-info mr-1"></i> Catatan: Ganti <code class="bg-gray-900 px-1 rounded">http://localhost:3000</code> pada contoh di bawah dengan URL Vercel Anda saat sudah di-deploy.</p>
         </div>
 
         <div class="bg-gray-800 rounded-xl border border-gray-700 mb-6 overflow-hidden">
@@ -128,28 +129,40 @@
             <div class="p-6">
                 <p class="text-gray-400 text-sm mb-4">Mendaftarkan perangkat baru ke dalam server agar tercatat di menu Device Management.</p>
 
-                <h4 class="font-bold text-gray-300 text-sm mb-2">Request Body (JSON) / Query Params:</h4>
-                <table class="w-full text-left text-sm mb-6 bg-gray-900 rounded overflow-hidden">
-                    <thead class="bg-gray-800 text-gray-400">
-                    <tr><th class="p-2">Parameter</th><th class="p-2">Type</th><th class="p-2">Description</th></tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-700 text-gray-300">
-                    <tr><td class="p-2 font-mono text-green-400">device_name</td><td class="p-2">String (Required)</td><td class="p-2">Nama perangkat (contoh: "STB Android Ruang Tamu")</td></tr>
-                    </tbody>
-                </table>
+                <h4 class="font-bold text-gray-300 text-sm mb-2">Contoh Request (cURL):</h4>
+                <div class="mb-6 rounded overflow-hidden border border-gray-700">
+                    <div class="bg-gray-900 px-4 py-2 flex justify-between items-center border-b border-gray-700">
+                        <span class="text-xs font-mono text-gray-400">bash / cURL</span>
+                        <button onclick="copyCode(this, 'code-join-curl')" class="text-xs bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1 rounded transition-colors"><i class="fa-regular fa-copy mr-1"></i> Copy</button>
+                    </div>
+                    <pre id="code-join-curl" class="bg-black p-4 text-sm font-mono text-green-300 overflow-x-auto whitespace-pre">curl -X POST http://localhost:3000/api/v1/join \
+  -H "x-api-key: centauri" \
+  -H "Content-Type: application/json" \
+  -d '{"device_name": "STB Android Ruang Tamu"}'</pre>
+                </div>
 
-                <h4 class="font-bold text-gray-300 text-sm mb-2">Success Response:</h4>
-                <pre class="bg-gray-900 p-4 rounded border border-gray-600 font-mono text-sm text-blue-300 overflow-x-auto">
-{
-  "message": "Device berhasil bergabung",
-  "device": {
-    "id": "dev-m0z...",
-    "name": "STB Android Ruang Tamu",
-    "ip": "192.168.1.x",
-    "lastSeen": "12/06/2026, 19:52:57",
-    "status": "Online"
-  }
-}</pre>
+                <h4 class="font-bold text-gray-300 text-sm mb-2">Contoh Request (PHP):</h4>
+                <div class="mb-6 rounded overflow-hidden border border-gray-700">
+                    <div class="bg-gray-900 px-4 py-2 flex justify-between items-center border-b border-gray-700">
+                        <span class="text-xs font-mono text-gray-400">PHP (cURL)</span>
+                        <button onclick="copyCode(this, 'code-join-php')" class="text-xs bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1 rounded transition-colors"><i class="fa-regular fa-copy mr-1"></i> Copy</button>
+                    </div>
+                    <pre id="code-join-php" class="bg-black p-4 text-sm font-mono text-blue-300 overflow-x-auto whitespace-pre">&lt;?php
+$ch = curl_init('http://localhost:3000/api/v1/join');
+$payload = json_encode(['device_name' => 'STB Android Ruang Tamu']);
+
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'x-api-key: centauri',
+    'Content-Type: application/json'
+]);
+
+$response = curl_exec($ch);
+curl_close($ch);
+
+echo $response;</pre>
+                </div>
             </div>
         </div>
 
@@ -161,21 +174,35 @@
             <div class="p-6">
                 <p class="text-gray-400 text-sm mb-4">Mengambil seluruh data channel dan film (VOD) yang ada di server dalam format JSON.</p>
 
-                <h4 class="font-bold text-gray-300 text-sm mb-2">Success Response:</h4>
-                <pre class="bg-gray-900 p-4 rounded border border-gray-600 font-mono text-sm text-blue-300 overflow-x-auto">
-{
-  "message": "Success",
-  "total": 600,
-  "data": [
-    {
-      "id": "ch-17180000...",
-      "name": "SCTV FHD",
-      "category": "NASIONAL FHD",
-      "logo": "https://...",
-      "url": "http://..."
-    }
-  ]
-}</pre>
+                <h4 class="font-bold text-gray-300 text-sm mb-2">Contoh Request (cURL):</h4>
+                <div class="mb-6 rounded overflow-hidden border border-gray-700">
+                    <div class="bg-gray-900 px-4 py-2 flex justify-between items-center border-b border-gray-700">
+                        <span class="text-xs font-mono text-gray-400">bash / cURL</span>
+                        <button onclick="copyCode(this, 'code-play-curl')" class="text-xs bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1 rounded transition-colors"><i class="fa-regular fa-copy mr-1"></i> Copy</button>
+                    </div>
+                    <pre id="code-play-curl" class="bg-black p-4 text-sm font-mono text-green-300 overflow-x-auto whitespace-pre">curl -X GET http://localhost:3000/api/v1/playlist \
+  -H "x-api-key: centauri"</pre>
+                </div>
+
+                <h4 class="font-bold text-gray-300 text-sm mb-2">Contoh Request (PHP):</h4>
+                <div class="mb-6 rounded overflow-hidden border border-gray-700">
+                    <div class="bg-gray-900 px-4 py-2 flex justify-between items-center border-b border-gray-700">
+                        <span class="text-xs font-mono text-gray-400">PHP (file_get_contents)</span>
+                        <button onclick="copyCode(this, 'code-play-php')" class="text-xs bg-gray-700 hover:bg-gray-600 text-gray-200 px-3 py-1 rounded transition-colors"><i class="fa-regular fa-copy mr-1"></i> Copy</button>
+                    </div>
+                    <pre id="code-play-php" class="bg-black p-4 text-sm font-mono text-blue-300 overflow-x-auto whitespace-pre">&lt;?php
+$options = [
+    'http' => [
+        'method' => 'GET',
+        'header' => 'x-api-key: centauri'
+    ]
+];
+
+$context = stream_context_create($options);
+$response = file_get_contents('http://localhost:3000/api/v1/playlist', false, $context);
+
+echo $response;</pre>
+                </div>
             </div>
         </div>
     </section>
@@ -527,6 +554,29 @@
                 console.error(e);
             }
         }
+    }
+    // Fungsi untuk menyalin kode ke Clipboard
+    function copyCode(buttonElement, targetId) {
+        // Ambil teks dari elemen pre
+        const codeText = document.getElementById(targetId).innerText;
+
+        // Gunakan API Clipboard modern
+        navigator.clipboard.writeText(codeText).then(() => {
+            // Simpan html tombol asli
+            const originalHTML = buttonElement.innerHTML;
+
+            // Ubah tampilan tombol jadi sukses
+            buttonElement.innerHTML = '<i class="fa-solid fa-check text-green-400 mr-1"></i> Copied!';
+            buttonElement.classList.replace('bg-gray-700', 'bg-green-900/50');
+
+            // Kembalikan ke semula setelah 2 detik
+            setTimeout(() => {
+                buttonElement.innerHTML = originalHTML;
+                buttonElement.classList.replace('bg-green-900/50', 'bg-gray-700');
+            }, 2000);
+        }).catch(err => {
+            alert('Gagal menyalin kode. Browser tidak mendukung fitur ini.');
+        });
     }
 
     // Init load pertama kali halaman dibuka
