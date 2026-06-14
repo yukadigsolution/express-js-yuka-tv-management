@@ -9,7 +9,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 // --- PATHS ---
-const DATA_DIR = path.join(process.cwd(), 'data');
+// Jika berjalan di Vercel, gunakan folder /tmp yang diizinkan untuk tulis/baca sementara
+const DATA_DIR = process.env.VERCEL ? path.join('/tmp', 'data') : path.join(process.cwd(), 'data');
 const DEVICES_PATH = path.join(DATA_DIR, 'devices.json');
 const CHANNELS_PATH = path.join(DATA_DIR, 'channels.json');
 
@@ -177,5 +178,21 @@ app.get('/api/v1/playlist', verifyApiKey, (req: Request, res: Response) => {
   });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// --- RUTE FRONTEND (WAJIB ADA) ---
+// Beritahu Express letak folder public untuk mengambil file CSS/JS/Gambar
+app.use(express.static(path.join(process.cwd(), 'public')));
+
+// Tangkap semua URL selain API untuk menampilkan halaman Dashboard (index.html)
+app.get('*', (req: Request, res: Response) => {
+  res.sendFile(path.join(process.cwd(), 'public', 'index.html'));
+});
+
+// --- EXPORT UNTUK VERCEL ---
+// Vercel Serverless butuh module di-export, bukan menggunakan app.listen
+export default app;
+
+// Tetap jalankan app.listen HANYA jika sedang di komputer lokal
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+}
